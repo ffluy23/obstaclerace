@@ -195,7 +195,7 @@ const scenes = {
         <div class="scene">
           <div class="scene-title">엑... 정말로?</div>
           <div class="choices">
-            <button class="choice-btn" onclick="getItem('포켓몬 피리'); goTo('q7')">
+            <button class="choice-btn" onclick="getItem('포켓몬 피리'); goTo('q6_blue')">
               <span class="choice-key">A</span> 네
             </button>
             <button class="choice-btn" onclick="goTo('q6_blue')">
