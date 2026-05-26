@@ -1,44 +1,590 @@
 @import url('https://cdn.jsdelivr.net/gh/MonadABXY/mona-font/web/mona.css');
 
+@font-face {
+    font-family: 'DnfBitbeatV2';
+    src: url('//cdn.df.nexon.com/img/common/font/DNFBitBitv2.otf')format('opentype');
+    font-weight: 400;
+    font-display: swap;
+}
+
 :root {
-      --bg: #0d0d1a;
-      --track: #1a1a2e;
-      --card: #16213e;
-      --border: #e94560;
-      --accent: #f5a623;
-      --green: #0f9b58;
-      --red: #e94560;
-      --text: #eaeaea;
-      --muted: #8888aa;
-      --btn-bg: #1a1a2e;
-      --btn-border: #e94560;
-      --btn-hover: #e94560;
-    }
+    --green: #8eb998;
+    --green-dark: #6a9b7a;
+    --green-deep: #3d6b4f;
+    --green-light: #c4ddc9;
+    --green-glow: rgba(142, 185, 152, 0.35);
+    --dialog-bg: rgba(10, 22, 14, 0.88);
+    --dialog-border: #8eb998;
+    --choice-bg: rgba(12, 28, 17, 0.92);
+    --text-main: #d6edd9;
+    --text-dim: #8eb998;
+    --badge-bg: rgba(142, 185, 152, 0.18);
+    --font-pixel: 'Mona12', monospace;
+    --font-body: 'Mona12', sans-serif;
 
-* { box-sizing: border-box; margin: 0; padding: 0; }
+    /* ── Safe Area 변수 ── */
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+    --safe-left: env(safe-area-inset-left, 0px);
+    --safe-right: env(safe-area-inset-right, 0px);
 
-/* 진행바 */
+    /* ── 대화창 높이 (JS에서 동적으로도 사용) ── */
+    --dialog-height: 120px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html {
+    height: 100%;
+    /* iOS Safari 주소창 대응: dvh 우선, 폴백 100% */
+    height: -webkit-fill-available;
+}
+
+body {
+    font-family: var(--font-body);
+    background: #0a160e;
+    color: var(--text-main);
+    height: 100%;
+    height: -webkit-fill-available;
+    overflow: hidden;
+    /* 모바일 텍스트 자동 확대 방지 */
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+}
+
+#app {
+    position: fixed;
+    inset: 0;
+    /* iOS Safe Area 대응 */
+    padding-top: var(--safe-top);
+    padding-left: var(--safe-left);
+    padding-right: var(--safe-right);
+    background-image: url('image/배경.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    overflow: hidden;
+}
+
+#app::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(5, 15, 8, 0.25);
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* ── 진행바 ── */
 #progress-wrap {
-    margin-bottom: 16px;
+    position: relative;
+    z-index: 10;
+    padding: 10px 18px 0;
     display: none;
 }
+
 #progress-label {
-    font-size: 12px;
-    color: var(--muted);
-    margin-bottom: 6px;
-    letter-spacing: 1px;
+    font-family: var(--font-pixel);
+    font-size: 11px;
+    color: var(--green);
+    letter-spacing: 0.1em;
+    margin-bottom: 4px;
+    opacity: 0.8;
 }
+
 #progress-bar-bg {
-    height: 8px;
-    background: #222;
-    border-radius: 4px;
+    width: 100%;
+    height: 6px;
+    background: rgba(142, 185, 152, 0.15);
+    border-radius: 3px;
     overflow: hidden;
-    border: 1px solid #333;
+    border: 1px solid rgba(142, 185, 152, 0.2);
 }
+
 #progress-bar {
     height: 100%;
-    background: linear-gradient(90deg, var(--green), var(--accent));
-    border-radius: 4px;
-    transition: width 0.5s ease;
-    width: 0;
+    width: 0%;
+    background: linear-gradient(90deg, var(--green-dark), var(--green));
+    border-radius: 3px;
+    transition: width 0.6s cubic-bezier(.4,0,.2,1);
+    box-shadow: 0 0 8px var(--green-glow);
+}
+
+/* ── 인벤토리 ── */
+#inventory {
+    position: relative;
+    z-index: 10;
+    padding: 6px 18px;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    min-height: 28px;
+}
+
+.item-badge {
+    font-family: var(--font-pixel);
+    font-size: 11px;
+    background: var(--badge-bg);
+    border: 1px solid var(--green);
+    color: var(--green-light);
+    padding: 2px 8px;
+    border-radius: 2px;
+    letter-spacing: 0.05em;
+}
+
+/* ── 씬 컨테이너 ── */
+#scene-container {
+    position: relative;
+    z-index: 10;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    padding-bottom: 0;
+    overflow: hidden;
+    /* 대화창 높이만큼 하단 여백 확보 */
+    padding-bottom: var(--dialog-height);
+}
+
+/* ── 씬 공통 ── */
+.scene {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+/* ── 선택지 오버레이 ──
+   모바일: dialog-box 바로 위에 붙도록 fixed bottom 기준으로 재배치
+   대화창 높이 + safe-area + 여유 간격 계산
+── */
+.choices-overlay {
+    position: fixed;
+    /* 대화창 높이(var(--dialog-height)) + safe-area-bottom + 여백 8px */
+    bottom: calc(var(--dialog-height) + var(--safe-bottom) + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: center;
+    z-index: 30;
+    width: min(420px, calc(100vw - 32px));
+    animation: choices-in 0.22s ease-out both;
+    /* 선택지가 많을 때 스크롤 가능하게 */
+    max-height: calc(100dvh - var(--dialog-height) - var(--safe-bottom) - 80px);
+    overflow-y: auto;
+    /* 스크롤바 숨김 */
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    /* 하단 페이드 힌트 */
+    -webkit-mask-image: linear-gradient(to bottom, black 85%, transparent 100%);
+    mask-image: linear-gradient(to bottom, black 85%, transparent 100%);
+    padding-bottom: 8px;
+}
+
+.choices-overlay::-webkit-scrollbar { display: none; }
+
+@keyframes choices-in {
+    from { opacity: 0; transform: translateX(-50%) translateY(12px); }
+    to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+.choices-appear {
+    animation: choices-in 0.25s ease-out both;
+}
+
+.choice-btn {
+    width: 100%;
+    /* 터치 타겟 최소 44px 보장 */
+    min-height: 44px;
+    padding: 11px 20px;
+    font-family: var(--font-body);
+    font-size: 15px;
+    color: var(--text-main);
+    background: var(--choice-bg);
+    border: 1px solid rgba(142, 185, 152, 0.45);
+    border-radius: 3px;
+    cursor: pointer;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: background 0.15s, border-color 0.15s, transform 0.1s;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    position: relative;
+    overflow: hidden;
+    /* 모바일 터치 피드백 */
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+}
+
+.choice-btn::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: var(--green);
+    opacity: 0;
+    transition: opacity 0.15s;
+}
+
+/* 포인터가 있는 기기(데스크톱)만 hover 효과 */
+@media (hover: hover) and (pointer: fine) {
+    .choice-btn:hover {
+        background: rgba(30, 60, 38, 0.95);
+        border-color: var(--green);
+        transform: translateX(4px);
+    }
+    .choice-btn:hover::before { opacity: 1; }
+}
+
+/* 터치 기기 active 피드백 */
+.choice-btn:active {
+    background: rgba(30, 60, 38, 0.95);
+    border-color: var(--green);
+    transform: scale(0.98);
+}
+.choice-btn:active::before { opacity: 1; }
+
+.choice-key {
+    font-family: var(--font-pixel);
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--green);
+    background: rgba(142, 185, 152, 0.12);
+    border: 1px solid var(--green);
+    padding: 1px 7px;
+    border-radius: 2px;
+    min-width: 24px;
+    text-align: center;
+    flex-shrink: 0;
+    /* 터치 시 텍스트 선택 방지 */
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+/* 포켓몬 피리 선택지 */
+.hidden-item {
+    border-color: rgba(255, 215, 100, 0.55) !important;
+    color: #ffe9a0 !important;
+}
+.hidden-item .choice-key {
+    color: #ffd664;
+    border-color: #ffd664;
+    background: rgba(255, 214, 100, 0.1);
+}
+.hidden-item::before { background: #ffd664 !important; }
+
+/* ── 대사창 ── */
+.dialog-box {
+    position: fixed;
+    bottom: 0;
+    left: 0; right: 0;
+    z-index: 20;
+    background: var(--dialog-bg);
+    border-top: 2px solid var(--dialog-border);
+    /* Safe Area 하단 대응 */
+    padding: 16px 24px calc(16px + var(--safe-bottom));
+    padding-left: calc(24px + var(--safe-left));
+    padding-right: calc(24px + var(--safe-right));
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow: 0 -4px 32px rgba(0,0,0,0.5);
+    animation: dialog-slide 0.2s ease-out both;
+}
+
+@keyframes dialog-slide {
+    from { transform: translateY(20px); opacity: 0; }
+    to   { transform: translateY(0); opacity: 1; }
+}
+
+.dialog-box::before {
+    content: '';
+    position: absolute;
+    top: -5px; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--green), transparent);
+    opacity: 0.5;
+}
+
+/* 대사창 클릭 힌트 */
+.dialog-box::after {
+    content: 'TAP TO SKIP';
+    position: absolute;
+    top: 12px;
+    right: calc(16px + var(--safe-right));
+    font-family: var(--font-pixel);
+    font-size: 9px;
+    color: var(--green);
+    opacity: 0;
+    letter-spacing: 0.12em;
+    transition: opacity 0.3s;
+    pointer-events: none;
+}
+
+/* 타이핑 중일 때만 힌트 표시 */
+.dialog-box.is-typing::after {
+    opacity: 0.45;
+}
+
+.step-badge {
+    font-family: var(--font-pixel);
+    font-size: 11px;
+    color: var(--green);
+    background: var(--badge-bg);
+    border: 1px solid rgba(142, 185, 152, 0.3);
+    display: inline-block;
+    padding: 1px 8px;
+    border-radius: 2px;
+    margin-bottom: 8px;
+    letter-spacing: 0.12em;
+}
+
+.scene-title {
+    font-size: 16px;
+    line-height: 1.7;
+    color: var(--text-main);
+    /* 너무 길어지지 않도록 */
+    max-width: min(720px, 100%);
+}
+
+/* 커서 깜빡임 */
+.cursor {
+    display: inline-block;
+    width: 10px;
+    height: 14px;
+    background: var(--green);
+    margin-left: 4px;
+    vertical-align: middle;
+    animation: blink 0.9s step-start infinite;
+}
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0; }
+}
+
+/* ── 수식 블록 ── */
+.math-block {
+    margin-top: 10px;
+    font-family: var(--font-pixel);
+    font-size: 14px;
+    color: var(--green-light);
+    background: rgba(142, 185, 152, 0.07);
+    border-left: 3px solid var(--green);
+    padding: 8px 14px;
+    border-radius: 0 3px 3px 0;
+    line-height: 1.9;
+    /* 가로 넘침 방지 */
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* ── 메인 씬 ── */
+.main-scene {
+    justify-content: center !important;
+    min-height: 100dvh;
+    min-height: 100vh; /* dvh 폴백 */
+    background: transparent;
+}
+
+.main-title {
+    font-family: 'DnfBitbeatV2';
+    font-size: clamp(2rem, 8vw, 3.8rem);
+    font-weight: 500;
+    color: #fff;
+    -webkit-text-stroke: 3px var(--green);
+    letter-spacing: 0.06em;
+    text-align: center;
+    margin-bottom: 40px;
+    text-shadow:
+        0 0 20px var(--green-glow),
+        0 0 60px rgba(142, 185, 152, 0.15);
+    animation: title-glow 2.4s ease-in-out infinite alternate;
+    /* 선택 방지 */
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+@keyframes title-glow {
+    from { text-shadow: 0 0 18px var(--green-glow), 0 0 40px rgba(142,185,152,0.1); }
+    to   { text-shadow: 0 0 32px rgba(142,185,152,0.55), 0 0 80px rgba(142,185,152,0.25); }
+}
+
+.start-btn {
+    font-family: var(--font-pixel);
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--green-deep);
+    background: var(--green);
+    border: none;
+    /* 터치 타겟 최소 44px */
+    min-height: 52px;
+    padding: 14px 44px;
+    border-radius: 3px;
+    cursor: pointer;
+    letter-spacing: 0.08em;
+    transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
+    box-shadow: 0 0 0 3px rgba(142, 185, 152, 0.25);
+    animation: pulse-btn 2s ease-in-out infinite;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+@keyframes pulse-btn {
+    0%, 100% { box-shadow: 0 0 0 3px rgba(142,185,152,0.25); }
+    50%       { box-shadow: 0 0 0 6px rgba(142,185,152,0.1); }
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .start-btn:hover {
+        background: var(--green-light);
+        transform: translateY(-2px);
+    }
+}
+.start-btn:active { transform: scale(0.97); }
+
+/* ── 결과 씬 ── */
+.result-scene {
+    position: fixed;
+    inset: 0;
+    z-index: 40;
+    display: flex !important;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: rgba(5, 15, 8, 0.8);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    /* Safe Area 대응 */
+    padding: calc(24px + var(--safe-top)) calc(24px + var(--safe-right)) calc(24px + var(--safe-bottom)) calc(24px + var(--safe-left));
+}
+
+.result-msg {
+    font-family: var(--font-pixel);
+    font-size: clamp(1.4rem, 5vw, 2.2rem);
+    font-weight: 700;
+    color: #c5e0ab;
+    text-align: center;
+    line-height: 1.6;
+    margin-bottom: 28px;
+    padding: 0 24px;
+}
+
+.result-msg.success {
+    color: var(--green);
+    font-size: clamp(1.8rem, 6vw, 2.8rem);
+    text-shadow: 0 0 24px var(--green-glow);
+}
+
+.finish-time {
+    font-family: var(--font-pixel);
+    font-size: 22px;
+    color: var(--green-light);
+    margin-top: 8px;
+    letter-spacing: 0.1em;
+}
+
+.action-btn {
+    font-family: var(--font-pixel);
+    font-size: 15px;
+    color: var(--green-deep);
+    background: var(--green);
+    border: none;
+    min-height: 48px;
+    padding: 12px 32px;
+    border-radius: 3px;
+    cursor: pointer;
+    letter-spacing: 0.06em;
+    transition: transform 0.15s, background 0.15s;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+}
+@media (hover: hover) and (pointer: fine) {
+    .action-btn:hover { background: var(--green-light); transform: translateY(-2px); }
+}
+.action-btn:active { transform: scale(0.97); }
+
+/* ── 실패 흔들림 ── */
+@keyframes shake {
+    0%   { transform: translateX(0); }
+    20%  { transform: translateX(-8px); }
+    40%  { transform: translateX(8px); }
+    60%  { transform: translateX(-5px); }
+    80%  { transform: translateX(5px); }
+    100% { transform: translateX(0); }
+}
+.shake { animation: shake 0.45s ease-in-out; }
+
+/* ── 반응형 ── */
+
+/* 작은 모바일 (360px 이하) */
+@media (max-width: 360px) {
+    .dialog-box {
+        padding: 10px 14px calc(10px + var(--safe-bottom));
+    }
+    .scene-title { font-size: 13px; }
+    .choices-overlay { width: calc(100vw - 24px); gap: 6px; }
+    .choice-btn { font-size: 13px; padding: 9px 12px; min-height: 42px; }
+    .math-block { font-size: 11px; }
+    .main-title { -webkit-text-stroke: 2px var(--green); }
+}
+
+/* 일반 모바일 (480px 이하) */
+@media (max-width: 480px) {
+    .dialog-box {
+        padding: 12px 16px calc(12px + var(--safe-bottom));
+        padding-left: calc(16px + var(--safe-left));
+        padding-right: calc(16px + var(--safe-right));
+    }
+    .scene-title { font-size: 14px; line-height: 1.65; }
+    .choices-overlay {
+        width: calc(100vw - 28px);
+        gap: 7px;
+        bottom: calc(var(--dialog-height) + var(--safe-bottom) + 6px);
+    }
+    .choice-btn { font-size: 14px; padding: 10px 14px; }
+    .math-block { font-size: 12px; }
+    .step-badge { font-size: 10px; }
+    #progress-wrap { padding: 8px 14px 0; }
+    #inventory { padding: 4px 14px; }
+}
+
+/* 태블릿 (481px ~ 768px) */
+@media (min-width: 481px) and (max-width: 768px) {
+    .choices-overlay { width: min(460px, calc(100vw - 40px)); }
+    .dialog-box { padding: 14px 28px calc(14px + var(--safe-bottom)); }
+}
+
+/* 가로 모드 (landscape) - 높이가 낮을 때 */
+@media (max-height: 500px) and (orientation: landscape) {
+    .dialog-box { padding-top: 8px; padding-bottom: calc(8px + var(--safe-bottom)); }
+    .scene-title { font-size: 13px; line-height: 1.5; }
+    .step-badge { margin-bottom: 4px; font-size: 10px; }
+    .choices-overlay {
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+        bottom: calc(var(--dialog-height) + var(--safe-bottom) + 4px);
+        gap: 6px;
+        max-height: calc(100dvh - var(--dialog-height) - 60px);
+    }
+    .choice-btn {
+        width: auto;
+        flex: 1 1 calc(50% - 3px);
+        min-width: 140px;
+        font-size: 13px;
+        padding: 8px 12px;
+        min-height: 40px;
+    }
+    .main-scene { gap: 20px; }
+    .main-title { font-size: clamp(1.6rem, 6vw, 2.4rem); margin-bottom: 20px; }
 }
