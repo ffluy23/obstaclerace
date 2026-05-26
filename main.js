@@ -434,6 +434,13 @@ function render() {
     // 진행바
     const progressWrap = document.getElementById('progress-wrap');
     const progressBar  = document.getElementById('progress-bar');
+    const progressLabel = document.getElementById('progress-label');
+
+    // label을 progress-bar 안으로 이동 (최초 1회)
+    if (progressLabel && progressBar && progressLabel.parentElement !== progressBar) {
+        progressBar.appendChild(progressLabel);
+    }
+
     if (state.currentScene === 'main') {
         progressWrap.style.display = 'none';
     } else {

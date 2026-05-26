@@ -30,6 +30,9 @@
 
     /* ── 대화창 높이 (JS에서 동적으로도 사용) ── */
     --dialog-height: 120px;
+
+    /* ── 패널 전체를 위로 올리는 오프셋 ── */
+    --panel-offset: 60px;
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -82,17 +85,8 @@ body {
 #progress-wrap {
     position: relative;
     z-index: 10;
-    padding: 10px 18px 0;
+    padding: 10px 18px 20px;
     display: none;
-}
-
-#progress-label {
-    font-family: var(--font-pixel);
-    font-size: 11px;
-    color: var(--green);
-    letter-spacing: 0.1em;
-    margin-bottom: 4px;
-    opacity: 0.8;
 }
 
 #progress-bar-bg {
@@ -100,8 +94,9 @@ body {
     height: 6px;
     background: rgba(142, 185, 152, 0.15);
     border-radius: 3px;
-    overflow: hidden;
+    overflow: visible;
     border: 1px solid rgba(142, 185, 152, 0.2);
+    position: relative;
 }
 
 #progress-bar {
@@ -111,6 +106,19 @@ body {
     border-radius: 3px;
     transition: width 0.6s cubic-bezier(.4,0,.2,1);
     box-shadow: 0 0 8px var(--green-glow);
+    position: relative;
+}
+
+#progress-label {
+    position: absolute;
+    right: -10px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 18px;
+    line-height: 1;
+    pointer-events: none;
+    filter: drop-shadow(0 0 4px rgba(0,0,0,0.6));
+    transition: right 0.6s cubic-bezier(.4,0,.2,1);
 }
 
 /* ── 인벤토리 ── */
@@ -165,8 +173,8 @@ body {
 ── */
 .choices-overlay {
     position: fixed;
-    /* 대화창 높이(var(--dialog-height)) + safe-area-bottom + 여백 8px */
-    bottom: calc(var(--dialog-height) + var(--safe-bottom) + 8px);
+    /* 대화창 높이(var(--dialog-height)) + panel-offset + safe-area + 여백 8px */
+    bottom: calc(var(--dialog-height) + var(--panel-offset) + var(--safe-bottom) + 8px);
     left: 50%;
     transform: translateX(-50%);
     display: flex;
@@ -177,7 +185,7 @@ body {
     width: min(420px, calc(100vw - 32px));
     animation: choices-in 0.22s ease-out both;
     /* 선택지가 많을 때 스크롤 가능하게 */
-    max-height: calc(100dvh - var(--dialog-height) - var(--safe-bottom) - 80px);
+    max-height: calc(100dvh - var(--dialog-height) - var(--panel-offset) - var(--safe-bottom) - 80px);
     overflow-y: auto;
     /* 스크롤바 숨김 */
     scrollbar-width: none;
@@ -290,8 +298,8 @@ body {
     z-index: 20;
     background: var(--dialog-bg);
     border-top: 2px solid var(--dialog-border);
-    /* Safe Area 하단 대응 */
-    padding: 16px 24px calc(16px + var(--safe-bottom));
+    /* 내용은 panel-offset만큼 위로, 아래는 safe-area까지 채움 */
+    padding: 16px 24px calc(var(--panel-offset) + var(--safe-bottom));
     padding-left: calc(24px + var(--safe-left));
     padding-right: calc(24px + var(--safe-right));
     backdrop-filter: blur(12px);
@@ -541,7 +549,7 @@ body {
 /* 일반 모바일 (480px 이하) */
 @media (max-width: 480px) {
     .dialog-box {
-        padding: 12px 16px calc(12px + var(--safe-bottom));
+        padding: 12px 16px calc(var(--panel-offset) + var(--safe-bottom));
         padding-left: calc(16px + var(--safe-left));
         padding-right: calc(16px + var(--safe-right));
     }
@@ -549,7 +557,7 @@ body {
     .choices-overlay {
         width: calc(100vw - 28px);
         gap: 7px;
-        bottom: calc(var(--dialog-height) + var(--safe-bottom) + 6px);
+        bottom: calc(var(--dialog-height) + var(--panel-offset) + var(--safe-bottom) + 6px);
     }
     .choice-btn { font-size: 14px; padding: 10px 14px; }
     .math-block { font-size: 12px; }
@@ -566,14 +574,14 @@ body {
 
 /* 가로 모드 (landscape) - 높이가 낮을 때 */
 @media (max-height: 500px) and (orientation: landscape) {
-    .dialog-box { padding-top: 8px; padding-bottom: calc(8px + var(--safe-bottom)); }
+    .dialog-box { padding-top: 8px; padding-bottom: calc(var(--panel-offset) + var(--safe-bottom)); }
     .scene-title { font-size: 13px; line-height: 1.5; }
     .step-badge { margin-bottom: 4px; font-size: 10px; }
     .choices-overlay {
         flex-direction: row;
         flex-wrap: wrap;
         justify-content: center;
-        bottom: calc(var(--dialog-height) + var(--safe-bottom) + 4px);
+        bottom: calc(var(--dialog-height) + var(--panel-offset) + var(--safe-bottom) + 4px);
         gap: 6px;
         max-height: calc(100dvh - var(--dialog-height) - 60px);
     }
