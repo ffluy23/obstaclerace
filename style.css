@@ -35,7 +35,12 @@
     --panel-offset: 60px;
 }
 
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*, *::before, *::after {
+    -webkit-tap-highlight-color: transparent; 
+    box-sizing: border-box;
+    margin: 0; 
+    padding: 0;
+ }
 
 html {
     height: 100%;

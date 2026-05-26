@@ -314,8 +314,19 @@ const scenes = {
                 dialogLayout({
                     text: '엑... 정말로?',
                     choices:
-                        choiceBtn('A', '네', "getItem('포켓몬 피리'); goTo('q6_blue')") +
+                        choiceBtn('A', '네', "getItem('포켓몬 피리'); goTo('q6_item_get')") +
                         choiceBtn('B', '파란휴지 할래요...', "goTo('q6_blue')"),
+                })
+            }</div>`;
+        },
+    },
+    q6_item_get: {
+        typing: { text: '포켓몬 피리를 획득했다!' },
+        render() {
+            return `<div class="scene">${
+                dialogLayout({
+                    text: '포켓몬 피리를 획득했다!',
+                    choices: choiceBtn('A', '계속', "goTo('q6_blue')"),
                 })
             }</div>`;
         },
@@ -401,7 +412,7 @@ const scenes = {
             const s = String(now.getSeconds()).padStart(2, '0');
             return `
                 <div class="scene result-scene">
-                    <div class="result-msg success">🎉 결승선 통과!</div>
+                    <div class="result-msg success">결승선 통과!</div>
                     <div class="finish-time">${h}시 ${m}분 ${s}초</div>
                 </div>`;
         },
